@@ -1,0 +1,11 @@
+# Render Blueprint — static site deploy for Ethno Foods
+# Render reads this automatically when you create a "Blueprint" from the repo.
+# (You can also just create a "Static Site" in the dashboard and set
+#  Publish Directory = .  with no build command.)
+services:
+  - type: web
+    name: ethno-foods
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: .
+    pullRequestPreviewsEnabled: false

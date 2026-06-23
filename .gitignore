@@ -1,0 +1,13 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor / tooling
+.claude/
+.vscode/
+*.log
+
+# Node (for future Sarvam backend)
+node_modules/
+.env
+.env.local
