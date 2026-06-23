@@ -7,6 +7,7 @@ Thumbs.db
 .vscode/
 *.log
 _srv.*
+_*.json
 *.out
 *.err
 
