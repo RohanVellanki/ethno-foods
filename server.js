@@ -18,7 +18,7 @@ app.use(express.json({ limit: "12mb" }));
 
 const KEY        = process.env.SARVAM_API_KEY || "";
 const BASE       = "https://api.sarvam.ai";
-const CHAT_MODEL = process.env.SARVAM_CHAT_MODEL || "sarvam-m";
+const CHAT_MODEL = process.env.SARVAM_CHAT_MODEL || "sarvam-30b";
 const TTS_MODEL  = process.env.SARVAM_TTS_MODEL  || "bulbul:v2";
 const STT_MODEL  = process.env.SARVAM_STT_MODEL  || "saarika:v2";
 const TTS_SPEAKER= process.env.SARVAM_TTS_SPEAKER|| "anushka";
