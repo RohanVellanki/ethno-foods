@@ -336,7 +336,8 @@ function renderProducts(){
     const p=PRODUCTS.find(x=>x.id===b.dataset.ask);
     openBot(); askAboutProduct(p);
   });
-  $$("#productGrid .product-card").forEach(c=>c.onclick=()=>{
+  $$("#productGrid .product-card").forEach(c=>c.onclick=(e)=>{
+    if(e.target.closest("a,button")) return;   // Order/Ask buttons handle themselves
     const p=PRODUCTS.find(x=>x.id===c.dataset.id);
     openBot(); askAboutProduct(p);
   });
@@ -615,28 +616,34 @@ async function toggleSarvamMic(){
   }catch(e){ /* mic blocked */ toggleBrowserMic(); }
 }
 
-/* voice output: Sarvam TTS first, browser speech as fallback */
-let currentAudio=null;
+/* voice output: Sarvam TTS first, browser speech as fallback.
+   speakSeq guarantees ONLY the most-recent request ever plays — no overlap. */
+let currentAudio=null, speakSeq=0;
 function stopSpeaking(){
+  speakSeq++;                                   // invalidate any in-flight speak()
   try{ if(currentAudio){ currentAudio.pause(); currentAudio.currentTime=0; currentAudio=null; } }catch(e){}
   if("speechSynthesis" in window){ try{ window.speechSynthesis.cancel(); }catch(e){} }
 }
 async function speak(text){
   if(!speakOn || !text) return;
-  stopSpeaking();                       // never let two replies overlap
+  stopSpeaking();                               // kill anything currently playing
+  const my=speakSeq;                            // claim this turn
   if(USE_SARVAM){
     try{
       const r=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({text,lang:detectLang(text)})});
       const d=await r.json();
-      if(!speakOn) return;              // user switched voice off while fetching
+      if(my!==speakSeq || !speakOn) return;     // superseded by a newer reply, or muted
       if(d && d.audio){
+        try{ if(currentAudio){ currentAudio.pause(); } }catch(e){}
         const a=new Audio("data:"+(d.mime||"audio/wav")+";base64,"+d.audio);
-        currentAudio=a; a.play().catch(()=>browserSpeak(text)); return;
+        currentAudio=a;
+        a.play().catch(()=>{ if(my===speakSeq) browserSpeak(text); });
+        return;
       }
-    }catch(e){}
+    }catch(e){ if(my!==speakSeq) return; }
   }
-  if(!speakOn) return;
+  if(my!==speakSeq || !speakOn) return;
   browserSpeak(text);
 }
 function browserSpeak(text){

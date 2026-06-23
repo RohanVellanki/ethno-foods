@@ -62,8 +62,9 @@ app.post("/api/chat", async (req, res) => {
   if (!HAS_KEY()) return res.json({ fallback: true });
   try {
     const { message = "", lang = "en", history = [] } = req.body || {};
+    const langName = { en: "English", te: "Telugu (use proper తెలుగు script, NOT romanized)", hi: "Hindi (use proper हिंदी/Devanagari script, NOT romanized)" }[lang] || "the same language the user wrote in";
     const messages = [
-      { role: "system", content: BIZ_CONTEXT + `\n\nIMPORTANT: Detect the language of the user's message and reply ONLY in that SAME language (Telugu in Telugu script, Hindi in Devanagari, or English). Their latest message looks like: ${lang}. Never mix languages in one reply.` },
+      { role: "system", content: BIZ_CONTEXT + `\n\nCRITICAL LANGUAGE RULE: Reply ONLY in ${langName}. Do NOT transliterate, do NOT mix languages, do NOT write Telugu/Hindi in English letters, and do NOT explain your reasoning. Give only the short, warm, final answer.` },
       ...history.slice(-6),
       { role: "user", content: String(message).slice(0, 800) },
     ];
