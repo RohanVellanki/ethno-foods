@@ -19,7 +19,7 @@ app.use(express.json({ limit: "12mb" }));
 const KEY        = process.env.SARVAM_API_KEY || "";
 const BASE       = "https://api.sarvam.ai";
 const CHAT_MODEL = process.env.SARVAM_CHAT_MODEL || "sarvam-30b";
-const TTS_MODEL  = process.env.SARVAM_TTS_MODEL  || "bulbul:v2";
+const TTS_MODEL  = process.env.SARVAM_TTS_MODEL  || "bulbul:v3";
 const STT_MODEL  = process.env.SARVAM_STT_MODEL  || "saarika:v2";
 const TTS_SPEAKER= process.env.SARVAM_TTS_SPEAKER|| "anushka";
 const HAS_KEY    = () => KEY.trim().length > 0;
@@ -98,6 +98,7 @@ app.post("/api/tts", async (req, res) => {
         target_language_code: lc(lang),
         speaker: TTS_SPEAKER,
         model: TTS_MODEL,
+        pace: 1.0,
       }),
     });
     if (!r.ok) { const b = await r.text(); console.error("[tts]", r.status, b); return res.json({ fallback: true, _debug: { ep: "tts", status: r.status, body: b.slice(0, 300) } }); }

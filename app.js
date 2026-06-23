@@ -608,16 +608,27 @@ async function toggleSarvamMic(){
 }
 
 /* voice output: Sarvam TTS first, browser speech as fallback */
+let currentAudio=null;
+function stopSpeaking(){
+  try{ if(currentAudio){ currentAudio.pause(); currentAudio.currentTime=0; currentAudio=null; } }catch(e){}
+  if("speechSynthesis" in window){ try{ window.speechSynthesis.cancel(); }catch(e){} }
+}
 async function speak(text){
   if(!speakOn || !text) return;
+  stopSpeaking();                       // never let two replies overlap
   if(USE_SARVAM){
     try{
       const r=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json"},
         body:JSON.stringify({text,lang:LANG})});
       const d=await r.json();
-      if(d && d.audio){ const a=new Audio("data:"+(d.mime||"audio/wav")+";base64,"+d.audio); a.play().catch(()=>browserSpeak(text)); return; }
+      if(!speakOn) return;              // user switched voice off while fetching
+      if(d && d.audio){
+        const a=new Audio("data:"+(d.mime||"audio/wav")+";base64,"+d.audio);
+        currentAudio=a; a.play().catch(()=>browserSpeak(text)); return;
+      }
     }catch(e){}
   }
+  if(!speakOn) return;
   browserSpeak(text);
 }
 function browserSpeak(text){
@@ -677,7 +688,7 @@ function init(){
   $("#botSpeakToggle").onclick=function(){
     speakOn=!speakOn; this.classList.toggle("on",speakOn); this.classList.toggle("off",!speakOn);
     this.setAttribute("aria-checked",speakOn);
-    if(!speakOn && "speechSynthesis" in window) window.speechSynthesis.cancel();
+    if(!speakOn) stopSpeaking();        // stop any audio playing right now
   };
 }
 document.addEventListener("DOMContentLoaded", init);
