@@ -70,7 +70,7 @@ app.post("/api/chat", async (req, res) => {
     const r = await fetch(`${BASE}/v1/chat/completions`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEY}`, "api-subscription-key": KEY },
-      body: JSON.stringify({ model: CHAT_MODEL, messages, temperature: 0.3, max_tokens: 300 }),
+      body: JSON.stringify({ model: CHAT_MODEL, messages, temperature: 0.2, max_tokens: 300, reasoning_effort: null }),
     });
     if (!r.ok) { const b = await r.text(); console.error("[chat]", r.status, b); return res.json({ fallback: true, _debug: { ep: "chat", status: r.status, body: b.slice(0, 300) } }); }
     const data = await r.json();
