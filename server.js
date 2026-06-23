@@ -21,7 +21,7 @@ const BASE       = "https://api.sarvam.ai";
 const CHAT_MODEL = process.env.SARVAM_CHAT_MODEL || "sarvam-30b";
 const TTS_MODEL  = process.env.SARVAM_TTS_MODEL  || "bulbul:v3";
 const STT_MODEL  = process.env.SARVAM_STT_MODEL  || "saarika:v2";
-const TTS_SPEAKER= process.env.SARVAM_TTS_SPEAKER|| "anushka";
+const TTS_SPEAKER= process.env.SARVAM_TTS_SPEAKER|| "neha";  // valid Bulbul v3 voice (Telugu-capable)
 const HAS_KEY    = () => KEY.trim().length > 0;
 const LANG = { en: "en-IN", te: "te-IN", hi: "hi-IN" };
 const lc = (l) => LANG[l] || "en-IN";
