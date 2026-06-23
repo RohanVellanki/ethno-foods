@@ -12,6 +12,29 @@ const WA_NUMBER = "919243211033"; // +91 92432 11033
 const waLink = (msg) =>
   `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg || "Hi Ethno Foods! I'd like to know more about your products.")}`;
 
+/* ---------------- ICONS (clean line-art, no emoji) ---------------- */
+const _svg = (paths, cls="") =>
+  `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+const ICONS = {
+  bottle:'<path d="M10 3h4M11 3v2.5L9 8.5V19a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V8.5L13 5.5V3"/><path d="M9 13h6"/>',
+  wheat:'<path d="M12 21V9"/><path d="M12 9c-2.2-.8-3.2-2.6-3.2-4.8C11 4.2 12 6 12 9Zm0 0c2.2-.8 3.2-2.6 3.2-4.8C13 4.2 12 6 12 9Z"/><path d="M12 14c-2-.7-3-2.2-3-4.2C11 9.8 12 11.2 12 14Zm0 0c2-.7 3-2.2 3-4.2C13 9.8 12 11.2 12 14Z"/>',
+  bowl:'<path d="M3 11h18a9 9 0 0 1-18 0Z"/><path d="M8 8c0-1.5 1-2.5 1-2.5M12 7.5c0-1.5 1-2.5 1-2.5M16 8c0-1.5 1-2.5 1-2.5"/>',
+  leaf:'<path d="M5 20c0-8 6-14 14-14c0 8-6 14-14 14Z"/><path d="M5.5 19.5C9 16 12 14 16 13"/>',
+  jar:'<path d="M7 8.5h10V19a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V8.5Z"/><path d="M8 8.5V5.5h8v3M9.5 3.5h5"/>',
+  sprout:'<path d="M12 21V10"/><path d="M12 12c0-3-2.2-5-5-5c0 3 2.2 5 5 5Z"/><path d="M12 10c0-2.6 2-4.5 4.5-4.5C16.5 8 14.5 10 12 10Z"/>',
+  clean:'<path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><path d="M12 8.5l1.5 2L12 12l-1.5-1.5L12 8.5Z"/><path d="M17 6l.8 1.6L19.5 8l-1.6.8L17 10.5"/>',
+  press:'<path d="M6 10.5h12l-1.4 8.2a2 2 0 0 1-2 1.7H9.4a2 2 0 0 1-2-1.7L6 10.5Z"/><path d="M9 10.5V7a3 3 0 0 1 6 0v3.5"/>',
+  filter:'<path d="M4 5h16l-6.2 7.2V19l-3.6 1.8v-8.6L4 5Z"/>',
+  check:'<circle cx="12" cy="12" r="9"/><path d="M8 12.2l2.6 2.6L16 9"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>',
+  shield:'<path d="M12 3l7 3v6c0 4-3 7.2-7 9c-4-1.8-7-5-7-9V6l7-3Z"/><path d="M9 12l2 2 4-4"/>',
+  pin:'<path d="M12 21s-6-5.2-6-10a6 6 0 0 1 12 0c0 4.8-6 10-6 10Z"/><circle cx="12" cy="11" r="2.2"/>',
+  chat:'<path d="M21 12a8 8 0 0 1-11.5 7.2L4 21l1.8-5.5A8 8 0 1 1 21 12Z"/>',
+};
+const CAT_ICON = { oils:"bottle", millets:"wheat", rice:"bowl", flours:"bowl", naturals:"leaf", pickles:"jar" };
+const PROC_ICON = ["sprout","clean","press","filter","bottle"];
+const FEAT_ICON = ["check","globe","shield","pin"];
+
 /* ---------------- PRODUCT CATALOG ---------------- */
 const CATEGORIES = [
   { id: "all",     en: "All",            te: "అన్నీ",        hi: "सभी" },
@@ -118,7 +141,12 @@ const PRODUCTS = [
 /* ---------------- UI STRINGS (i18n) ---------------- */
 const I18N = {
   en:{
-    nav_products:"Products", nav_process:"How It's Made", nav_about:"About", nav_contact:"Contact", nav_order:"Order",
+    nav_products:"Products", nav_assistant:"AI Assistant", nav_process:"How It's Made", nav_about:"About", nav_contact:"Contact", nav_order:"Order",
+    hero_ai_t:"Talk to us in తెలుగు", hero_ai_s:"AI voice assistant · live", hero_lic:"Licensed & certified",
+    ai_eyebrow:"Meet your assistant", ai_title:"Ask out loud — in your language",
+    ai_sub:"Our AI assistant understands Telugu, Hindi and English. Type or just speak — it answers about any product, price or delivery, and talks back in your language.",
+    ai_p1:"Speaks & listens in తెలుగు · हिंदी · English", ai_p2:"Knows every product, price & delivery detail", ai_p3:"Available 24×7 — no waiting, no call centre",
+    ai_cta:"Try the voice assistant", ai_demo_status:"Listening…",
     hero_eyebrow:"FSSAI Licensed · Chemical-Free · Pan-India Delivery",
     hero_title:"Pure, traditional foods<br/>straight from the farm",
     hero_tagline:"\"మీ ఆరోగ్యం.. మీ చేతుల్లోనే\" — your health is in your hands.",
@@ -144,7 +172,12 @@ const I18N = {
     q_products:"Show products", q_oils:"Wood-pressed oils", q_delivery:"Delivery?", q_contact:"Contact",
   },
   te:{
-    nav_products:"ఉత్పత్తులు", nav_process:"తయారీ విధానం", nav_about:"మా గురించి", nav_contact:"సంప్రదించండి", nav_order:"ఆర్డర్",
+    nav_products:"ఉత్పత్తులు", nav_assistant:"AI అసిస్టెంట్", nav_process:"తయారీ విధానం", nav_about:"మా గురించి", nav_contact:"సంప్రదించండి", nav_order:"ఆర్డర్",
+    hero_ai_t:"తెలుగులో మాట్లాడండి", hero_ai_s:"AI వాయిస్ అసిస్టెంట్ · లైవ్", hero_lic:"లైసెన్స్ & ధృవీకరణ",
+    ai_eyebrow:"మీ అసిస్టెంట్", ai_title:"మీ భాషలో — మాట్లాడి అడగండి",
+    ai_sub:"మా AI అసిస్టెంట్ తెలుగు, హిందీ, ఇంగ్లీష్ అర్థం చేసుకుంటుంది. టైప్ చేయండి లేదా మాట్లాడండి — ఏ ఉత్పత్తి, ధర, డెలివరీ గురించైనా మీ భాషలో సమాధానం చెబుతుంది.",
+    ai_p1:"తెలుగు · हिंदी · English లో మాట్లాడుతుంది & వింటుంది", ai_p2:"ప్రతి ఉత్పత్తి, ధర, డెలివరీ వివరాలు తెలుసు", ai_p3:"24×7 అందుబాటులో — వెయిటింగ్ లేదు",
+    ai_cta:"వాయిస్ అసిస్టెంట్ ప్రయత్నించండి", ai_demo_status:"వింటోంది…",
     hero_eyebrow:"FSSAI లైసెన్స్ · రసాయనాలు లేవు · దేశమంతటా డెలివరీ",
     hero_title:"పొలం నుండి నేరుగా<br/>స్వచ్ఛమైన సంప్రదాయ ఆహారం",
     hero_tagline:"\"మీ ఆరోగ్యం.. మీ చేతుల్లోనే\"",
@@ -170,7 +203,12 @@ const I18N = {
     q_products:"ఉత్పత్తులు చూపించు", q_oils:"గానుగ నూనెలు", q_delivery:"డెలివరీ?", q_contact:"సంప్రదించండి",
   },
   hi:{
-    nav_products:"उत्पाद", nav_process:"कैसे बनता है", nav_about:"हमारे बारे में", nav_contact:"संपर्क", nav_order:"ऑर्डर",
+    nav_products:"उत्पाद", nav_assistant:"AI असिस्टेंट", nav_process:"कैसे बनता है", nav_about:"हमारे बारे में", nav_contact:"संपर्क", nav_order:"ऑर्डर",
+    hero_ai_t:"తెలుగు / हिंदी में बात करें", hero_ai_s:"AI वॉइस असिस्टेंट · लाइव", hero_lic:"लाइसेंस प्राप्त",
+    ai_eyebrow:"आपका असिस्टेंट", ai_title:"अपनी भाषा में — बोलकर पूछें",
+    ai_sub:"हमारा AI असिस्टेंट तेलुगु, हिंदी और अंग्रेज़ी समझता है। टाइप करें या बस बोलें — किसी भी उत्पाद, कीमत या डिलीवरी का जवाब आपकी भाषा में देता है।",
+    ai_p1:"తెలుగు · हिंदी · English में बोलता व सुनता है", ai_p2:"हर उत्पाद, कीमत व डिलीवरी जानता है", ai_p3:"24×7 उपलब्ध — कोई इंतज़ार नहीं",
+    ai_cta:"वॉइस असिस्टेंट आज़माएं", ai_demo_status:"सुन रहा है…",
     hero_eyebrow:"FSSAI लाइसेंस · केमिकल-मुक्त · पूरे भारत में डिलीवरी",
     hero_title:"खेत से सीधे<br/>शुद्ध, पारंपरिक भोजन",
     hero_tagline:"\"आपकी सेहत.. आपके हाथ में\"",
@@ -221,6 +259,13 @@ const CONTACTS = [
     addr:"Opp. Vidyanagar Gram Panchayat Office" },
 ];
 
+/* AI showcase demo conversation (per language) */
+const AI_DEMO = {
+  en:[["user","Do you have wood-pressed oil?"],["bot","Yes! Wood-pressed sunflower, groundnut & sesame — cloth-filtered, chemical-free."],["user","Deliver to Hyderabad?"],["bot","Absolutely — pan-India delivery with export packing. Want prices on WhatsApp?"]],
+  te:[["user","గానుగ నూనె ఉందా?"],["bot","ఉంది! పొద్దు తిరుగుడు, వేరుశనగ, నువ్వుల గానుగ నూనెలు — రసాయనాలు లేవు."],["user","హైదరాబాద్‌కి డెలివరీ ఉందా?"],["bot","ఖచ్చితంగా — దేశమంతటా డెలివరీ. ధరలు WhatsApp లో పంపనా?"]],
+  hi:[["user","लकड़ी कोल्हू तेल है?"],["bot","हाँ! सूरजमुखी, मूंगफली व तिल का कोल्हू तेल — बिना केमिकल।"],["user","हैदराबाद डिलीवरी?"],["bot","बिल्कुल — पूरे भारत में डिलीवरी। कीमत WhatsApp पर भेजूं?"]],
+};
+
 /* ---------------- STATE ---------------- */
 let LANG = "en";
 let FILTER = "all";
@@ -267,7 +312,8 @@ function renderProducts(){
     <article class="product-card" data-id="${p.id}">
       <div class="pc-media" style="background:linear-gradient(150deg,${p.grad[0]},${p.grad[1]})">
         <span class="pc-tag">${catName(p.cat)}</span>
-        <span class="pc-emoji">${p.emoji}</span>
+        ${p.img ? `<img src="${p.img}" alt="${p.en}" loading="lazy"/>` : _svg(ICONS[CAT_ICON[p.cat]]||ICONS.leaf,"pc-icon")}
+        <span class="pc-monogram">${p.en.charAt(0)}</span>
       </div>
       <div class="pc-body">
         <span class="pc-name">${p.en}</span>
@@ -295,15 +341,15 @@ function renderProcess(){
   $("#processSteps").innerHTML = PROCESS_STEPS.map((s,i)=>`
     <div class="proc-step">
       <div class="proc-num">${i+1}</div>
-      <div class="proc-emoji">${s.emoji}</div>
+      <div class="proc-emoji">${_svg(ICONS[PROC_ICON[i]]||ICONS.leaf)}</div>
       <strong>${s[LANG]||s.en}</strong>
     </div>`).join("");
 }
 
 function renderFeatures(){
-  $("#aboutFeats").innerHTML = FEATURES.map(f=>`
+  $("#aboutFeats").innerHTML = FEATURES.map((f,i)=>`
     <div class="feat">
-      <div class="feat-icon">${f.emoji}</div>
+      <div class="feat-icon">${_svg(ICONS[FEAT_ICON[i]]||ICONS.check)}</div>
       <strong>${f[LANG]||f.en}</strong>
       <span>${f.en}</span>
     </div>`).join("");
@@ -322,12 +368,45 @@ function setWaLinks(){
   ["#navWa","#heroWa","#contactWa","#floatWa"].forEach(s=>{const el=$(s);if(el)el.href=link;});
 }
 
+function renderAiDemo(){
+  const box=$("#aiDemoBody"); if(!box) return;
+  const conv=AI_DEMO[LANG]||AI_DEMO.en;
+  box.innerHTML=conv.map(([who,text],i)=>
+    `<div class="ad-msg ${who}" style="animation-delay:${i*0.6}s">${text}</div>`).join("");
+}
+
+/* ---------- scroll reveal + counters (first load only) ---------- */
+let revealed=false;
+function applyReveal(){
+  if(revealed) return; revealed=true;
+  const targets=$$(".section-head, .product-card, .proc-step, .feat, .contact-card, .ai-show-copy, .ai-show-demo, .hero-copy, .hero-art, .contact-cta");
+  if(!("IntersectionObserver" in window)){ targets.forEach(el=>el.classList.add("in")); return; }
+  const io=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } });
+  },{threshold:.12,rootMargin:"0px 0px -40px 0px"});
+  targets.forEach(el=>{ el.classList.add("reveal"); io.observe(el); });
+
+  const stats=$(".about-stats");
+  if(stats){
+    const so=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){countUp();so.disconnect();}});},{threshold:.4});
+    so.observe(stats);
+  }
+}
+function countUp(){
+  $$(".about-stats strong").forEach(el=>{
+    const m=el.textContent.match(/^(\d+)(\+?)/); if(!m) return;
+    const end=+m[1], suf=m[2]||""; let cur=0; const step=Math.max(1,Math.round(end/28));
+    const id=setInterval(()=>{cur+=step; if(cur>=end){cur=end;clearInterval(id);} el.textContent=cur+suf;},28);
+  });
+}
+
 /* ---------------- LANGUAGE SWITCH ---------------- */
 function setLang(lang){
   LANG=lang;
   $$("#langSwitch button").forEach(b=>b.classList.toggle("active",b.dataset.lang===lang));
   $$("#botLang button").forEach(b=>b.classList.toggle("active",b.dataset.lang===lang));
-  applyI18n(); renderTrust(); renderFilters(); renderProducts(); renderProcess(); renderFeatures(); renderContacts();
+  applyI18n(); renderTrust(); renderFilters(); renderProducts(); renderProcess(); renderFeatures(); renderContacts(); renderAiDemo();
+  applyReveal();
 }
 
 /* ============================================================
@@ -501,6 +580,9 @@ function init(){
   window.addEventListener("scroll",()=>nav.classList.toggle("scrolled",window.scrollY>10));
   $("#navBurger").onclick=()=>$("#navLinks").classList.toggle("open");
   $$("#navLinks a").forEach(a=>a.onclick=()=>$("#navLinks").classList.remove("open"));
+
+  // AI showcase CTA
+  const aiBtn=$("#aiShowBtn"); if(aiBtn) aiBtn.onclick=openBot;
 
   // bot
   $("#botFab").onclick=openBot;

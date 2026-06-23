@@ -28,6 +28,7 @@
 
       <nav class="nav-links" id="navLinks">
         <a href="#products" data-i18n="nav_products">Products</a>
+        <a href="#assistant" data-i18n="nav_assistant">AI Assistant</a>
         <a href="#process" data-i18n="nav_process">How It's Made</a>
         <a href="#about" data-i18n="nav_about">About</a>
         <a href="#contact" data-i18n="nav_contact">Contact</a>
@@ -71,14 +72,25 @@
         </div>
       </div>
       <div class="hero-art" aria-hidden="true">
-        <div class="hero-orb"></div>
-        <div class="hero-leaf hero-leaf-1">🌿</div>
-        <div class="hero-card">
-          <div class="hero-card-icon">
-            <svg viewBox="0 0 24 24" width="40" height="40"><path fill="currentColor" d="M17 8C8 10 5.9 16.2 4 22h2c1-3 2.5-5 5-6c-1 2-2 3-3 4c5-1 8-4 9-12V4h-2c-1 0-1.6.4-2.4 1.2C12 5 11.6 4 11 4H8c0 2 1 3 3 4c1 0 2 0 3-.5C13.5 8.5 16 8 17 8Z"/></svg>
+        <div class="hero-panel" data-img="hero">
+          <span class="hero-panel-kicker" data-i18n="hero_card_t">Wood-Pressed · Cloth-Filtered</span>
+          <svg class="hero-panel-glyph" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M26 6h12M28 6v6c0 2-6 5-6 12v22a6 6 0 0 0 6 6h8a6 6 0 0 0 6-6V24c0-7-6-10-6-12V6"/>
+            <path d="M22 30h20"/><path d="M30 40c0-3 2-5 2-5s2 2 2 5a2 2 0 1 1-4 0Z"/>
+          </svg>
+          <span class="hero-panel-foot" data-i18n="hero_card_s">The traditional 5-step process, unchanged for generations.</span>
+          <span class="hero-panel-note">Photo of the press / oils drops in here</span>
+        </div>
+        <div class="hero-float hero-float-ai">
+          <span class="hf-dot"></span>
+          <div>
+            <strong data-i18n="hero_ai_t">Talk to us in తెలుగు</strong>
+            <small data-i18n="hero_ai_s">AI voice assistant · live</small>
           </div>
-          <strong data-i18n="hero_card_t">Wood-Pressed. Cloth-Filtered.</strong>
-          <span data-i18n="hero_card_s">The traditional 5-step process, unchanged for generations.</span>
+        </div>
+        <div class="hero-float hero-float-fssai">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="m9.6 16.2l-3.8-3.8l1.4-1.4l2.4 2.4l6-6l1.4 1.4z"/></svg>
+          <span><strong>FSSAI</strong><small data-i18n="hero_lic">Licensed & certified</small></span>
         </div>
       </div>
     </div>
@@ -100,6 +112,32 @@
 
       <div class="filter-bar" id="filterBar"></div>
       <div class="product-grid" id="productGrid"></div>
+    </div>
+  </section>
+
+  <!-- ===== AI ASSISTANT SHOWCASE ===== -->
+  <section class="ai-show" id="assistant">
+    <div class="container ai-show-inner">
+      <div class="ai-show-copy">
+        <span class="eyebrow eyebrow-light" data-i18n="ai_eyebrow">Meet your assistant</span>
+        <h2 data-i18n="ai_title">Ask out loud — in your language</h2>
+        <p data-i18n="ai_sub">Our AI assistant understands Telugu, Hindi and English. Type or just speak — it answers about any product, price or delivery, and talks back in your language.</p>
+        <ul class="ai-show-points">
+          <li><span class="ai-tick"></span><span data-i18n="ai_p1">Speaks &amp; listens in తెలుగు · हिंदी · English</span></li>
+          <li><span class="ai-tick"></span><span data-i18n="ai_p2">Knows every product, price &amp; delivery detail</span></li>
+          <li><span class="ai-tick"></span><span data-i18n="ai_p3">Available 24×7 — no waiting, no call centre</span></li>
+        </ul>
+        <button class="btn btn-primary btn-lg" id="aiShowBtn" data-i18n="ai_cta">Try the voice assistant</button>
+      </div>
+      <div class="ai-show-demo" aria-hidden="true">
+        <div class="ai-demo-head">
+          <span class="ai-demo-avatar">SV</span>
+          <div><strong>Ethno Assistant</strong><small data-i18n="ai_demo_status">Listening…</small></div>
+          <span class="ai-demo-live"></span>
+        </div>
+        <div class="ai-demo-body" id="aiDemoBody"></div>
+        <div class="ai-demo-wave"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
     </div>
   </section>
 
