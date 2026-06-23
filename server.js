@@ -74,10 +74,14 @@ app.post("/api/chat", async (req, res) => {
     });
     if (!r.ok) { const b = await r.text(); console.error("[chat]", r.status, b); return res.json({ fallback: true, _debug: { ep: "chat", status: r.status, body: b.slice(0, 300) } }); }
     const data = await r.json();
-    const reply = data?.choices?.[0]?.message?.content?.trim();
-    if (!reply) return res.json({ fallback: true });
+    const msg = data?.choices?.[0]?.message || {};
+    let reply = msg.content;
+    if (Array.isArray(reply)) reply = reply.map(x => (x && x.text) ? x.text : (typeof x === "string" ? x : "")).join(" ");
+    if (!reply && msg.reasoning_content) reply = msg.reasoning_content;
+    reply = String(reply || "").trim();
+    if (!reply) { console.error("[chat] empty", JSON.stringify(data).slice(0, 500)); return res.json({ fallback: true, _debug: { ep: "chat", note: "empty reply", data: JSON.stringify(data).slice(0, 500) } }); }
     res.json({ reply });
-  } catch (e) { console.error("[chat]", e.message); res.json({ fallback: true }); }
+  } catch (e) { console.error("[chat]", e.message); res.json({ fallback: true, _debug: { ep: "chat", err: String(e.message).slice(0, 200) } }); }
 });
 
 /* ---------------- text-to-speech ---------------- */
