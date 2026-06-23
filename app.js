@@ -273,6 +273,8 @@ let speakOn = true;
 let USE_SARVAM = false;        // flipped on if backend has a Sarvam key
 const CHAT_HISTORY = [];        // rolling context for the Sarvam chat
 const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* detect language from the text's script: Telugu / Devanagari(Hindi) / else English */
+const detectLang = (t) => /[ఀ-౿]/.test(t) ? "te" : /[ऀ-ॿ]/.test(t) ? "hi" : "en";
 
 const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => [...r.querySelectorAll(s)];
@@ -522,6 +524,7 @@ function botRespond(intent, raw){
 
 function userSend(text){
   if(!text.trim()) return;
+  stopSpeaking();                 // cut any voice still playing when the user acts
   addMsg("user", text);
   if(USE_SARVAM) return sarvamChat(text);
   return localRoute(text);
@@ -537,18 +540,20 @@ function localRoute(text){
 
 /* real Sarvam-powered chat (used when backend has a key) */
 async function sarvamChat(text){
+  const dl = detectLang(text);                 // auto-detect the user's language
   const tp=typing();
   try{
     const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({message:text,lang:LANG,history:CHAT_HISTORY})});
+      body:JSON.stringify({message:text,lang:dl,history:CHAT_HISTORY})});
     const d=await r.json();
     tp.remove();
     if(d.fallback||!d.reply) return localRoute(text);
     CHAT_HISTORY.push({role:"user",content:text},{role:"assistant",content:d.reply});
     if(CHAT_HISTORY.length>10) CHAT_HISTORY.splice(0,CHAT_HISTORY.length-10);
-    const waTxt = LANG==='te'?'WhatsApp లో ఆర్డర్':LANG==='hi'?'WhatsApp पर ऑर्डर':'Order on WhatsApp';
-    const waMsg = LANG==='te'?`నమస్తే Ethno Foods! మీ వెబ్‌సైట్ అసిస్టెంట్‌తో దీని గురించి అడిగాను: "${text}". దయచేసి ధర & వివరాలు చెప్పండి.`
-      :LANG==='hi'?`नमस्ते Ethno Foods! मैंने आपके वेबसाइट असिस्टेंट से पूछा: "${text}"। कृपया कीमत व विवरण बताएं।`
+    const rl = detectLang(d.reply);              // reply's language (for the button wording)
+    const waTxt = rl==='te'?'WhatsApp లో ఆర్డర్':rl==='hi'?'WhatsApp पर ऑर्डर':'Order on WhatsApp';
+    const waMsg = rl==='te'?`నమస్తే Ethno Foods! మీ వెబ్‌సైట్ అసిస్టెంట్‌తో దీని గురించి అడిగాను: "${text}". దయచేసి ధర & వివరాలు చెప్పండి.`
+      :rl==='hi'?`नमस्ते Ethno Foods! मैंने आपके वेबसाइट असिस्टेंट से पूछा: "${text}"। कृपया कीमत व विवरण बताएं।`
       :`Hi Ethno Foods! I asked your website assistant: "${text}". Please share price & details.`;
     addMsg("bot", escapeHtml(d.reply).replace(/\n/g,"<br/>")+
       `<a class="msg-wa" target="_blank" rel="noopener" href="${waLink(waMsg)}">💬 ${waTxt}</a>`);
@@ -600,7 +605,7 @@ async function toggleSarvamMic(){
       const tp=typing();
       try{
         const r=await fetch("/api/stt",{method:"POST",headers:{"Content-Type":"application/json"},
-          body:JSON.stringify({audioBase64:b64,mime:"audio/webm",lang:LANG})});
+          body:JSON.stringify({audioBase64:b64,mime:"audio/webm",lang:"auto"})});
         const d=await r.json(); tp.remove();
         if(d.transcript){ $("#botText").value=d.transcript; userSend(d.transcript); }
         else addMsg("bot", LANG==='te'?'క్షమించండి, వినిపించలేదు 🙏 మళ్లీ చెప్పండి.':LANG==='hi'?'माफ़ कीजिए, सुनाई नहीं दिया 🙏 दोबारा बोलें।':"Sorry, I didn't catch that 🙏 please try again.");
@@ -622,7 +627,7 @@ async function speak(text){
   if(USE_SARVAM){
     try{
       const r=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({text,lang:LANG})});
+        body:JSON.stringify({text,lang:detectLang(text)})});
       const d=await r.json();
       if(!speakOn) return;              // user switched voice off while fetching
       if(d && d.audio){
@@ -679,6 +684,9 @@ function init(){
   window.addEventListener("scroll",()=>nav.classList.toggle("scrolled",window.scrollY>10));
   $("#navBurger").onclick=()=>$("#navLinks").classList.toggle("open");
   $$("#navLinks a").forEach(a=>a.onclick=()=>$("#navLinks").classList.remove("open"));
+
+  // bot auto-detects language now — hide the in-bot language selector
+  const bl=$("#botLang"); if(bl) bl.style.display="none";
 
   // AI showcase CTA
   const aiBtn=$("#aiShowBtn"); if(aiBtn) aiBtn.onclick=openBot;

@@ -20,7 +20,7 @@ const KEY        = process.env.SARVAM_API_KEY || "";
 const BASE       = "https://api.sarvam.ai";
 const CHAT_MODEL = process.env.SARVAM_CHAT_MODEL || "sarvam-30b";
 const TTS_MODEL  = process.env.SARVAM_TTS_MODEL  || "bulbul:v3";
-const STT_MODEL  = process.env.SARVAM_STT_MODEL  || "saarika:v2";
+const STT_MODEL  = process.env.SARVAM_STT_MODEL  || "saaras:v3";  // auto language detection
 const TTS_SPEAKER= process.env.SARVAM_TTS_SPEAKER|| "neha";  // valid Bulbul v3 voice (Telugu-capable)
 const HAS_KEY    = () => KEY.trim().length > 0;
 const LANG = { en: "en-IN", te: "te-IN", hi: "hi-IN" };
@@ -63,7 +63,7 @@ app.post("/api/chat", async (req, res) => {
   try {
     const { message = "", lang = "en", history = [] } = req.body || {};
     const messages = [
-      { role: "system", content: BIZ_CONTEXT + `\n\n(User's UI language: ${lang}. Prefer replying in that language unless they clearly write another.)` },
+      { role: "system", content: BIZ_CONTEXT + `\n\nIMPORTANT: Detect the language of the user's message and reply ONLY in that SAME language (Telugu in Telugu script, Hindi in Devanagari, or English). Their latest message looks like: ${lang}. Never mix languages in one reply.` },
       ...history.slice(-6),
       { role: "user", content: String(message).slice(0, 800) },
     ];
@@ -119,7 +119,7 @@ app.post("/api/stt", async (req, res) => {
     const form = new FormData();
     form.append("file", new Blob([buf], { type: mime }), "audio.webm");
     form.append("model", STT_MODEL);
-    form.append("language_code", lc(lang));
+    form.append("language_code", lang === "auto" ? "unknown" : lc(lang));
     const r = await fetch(`${BASE}/speech-to-text`, {
       method: "POST",
       headers: { "api-subscription-key": KEY },
