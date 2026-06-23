@@ -69,10 +69,10 @@ app.post("/api/chat", async (req, res) => {
     ];
     const r = await fetch(`${BASE}/v1/chat/completions`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "api-subscription-key": KEY },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${KEY}`, "api-subscription-key": KEY },
       body: JSON.stringify({ model: CHAT_MODEL, messages, temperature: 0.3, max_tokens: 300 }),
     });
-    if (!r.ok) { console.error("[chat]", r.status, await r.text()); return res.json({ fallback: true }); }
+    if (!r.ok) { const b = await r.text(); console.error("[chat]", r.status, b); return res.json({ fallback: true, _debug: { ep: "chat", status: r.status, body: b.slice(0, 300) } }); }
     const data = await r.json();
     const reply = data?.choices?.[0]?.message?.content?.trim();
     if (!reply) return res.json({ fallback: true });
@@ -96,7 +96,7 @@ app.post("/api/tts", async (req, res) => {
         model: TTS_MODEL,
       }),
     });
-    if (!r.ok) { console.error("[tts]", r.status, await r.text()); return res.json({ fallback: true }); }
+    if (!r.ok) { const b = await r.text(); console.error("[tts]", r.status, b); return res.json({ fallback: true, _debug: { ep: "tts", status: r.status, body: b.slice(0, 300) } }); }
     const data = await r.json();
     const audio = data?.audios?.[0];
     if (!audio) return res.json({ fallback: true });
@@ -120,7 +120,7 @@ app.post("/api/stt", async (req, res) => {
       headers: { "api-subscription-key": KEY },
       body: form,
     });
-    if (!r.ok) { console.error("[stt]", r.status, await r.text()); return res.json({ fallback: true }); }
+    if (!r.ok) { const b = await r.text(); console.error("[stt]", r.status, b); return res.json({ fallback: true, _debug: { ep: "stt", status: r.status, body: b.slice(0, 300) } }); }
     const data = await r.json();
     const transcript = (data?.transcript || "").trim();
     res.json({ transcript });
