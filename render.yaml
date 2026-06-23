@@ -1,11 +1,24 @@
-# Render Blueprint — static site deploy for Ethno Foods
-# Render reads this automatically when you create a "Blueprint" from the repo.
-# (You can also just create a "Static Site" in the dashboard and set
-#  Publish Directory = .  with no build command.)
+# Render Blueprint — Ethno Foods web service (Node)
+# Serves the static site AND securely proxies Sarvam AI.
+# Set SARVAM_API_KEY in the Render dashboard (Environment) — never commit it.
 services:
   - type: web
     name: ethno-foods
-    runtime: static
-    buildCommand: ""
-    staticPublishPath: .
-    pullRequestPreviewsEnabled: false
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm install
+    startCommand: node server.js
+    autoDeploy: true
+    envVars:
+      - key: SARVAM_API_KEY
+        sync: false        # set this secret in the Render dashboard
+      # Optional overrides (defaults are sensible):
+      # - key: SARVAM_CHAT_MODEL
+      #   value: sarvam-m
+      # - key: SARVAM_TTS_MODEL
+      #   value: bulbul:v2
+      # - key: SARVAM_TTS_SPEAKER
+      #   value: anushka
+      # - key: SARVAM_STT_MODEL
+      #   value: saarika:v2

@@ -270,6 +270,9 @@ const AI_DEMO = {
 let LANG = "en";
 let FILTER = "all";
 let speakOn = true;
+let USE_SARVAM = false;        // flipped on if backend has a Sarvam key
+const CHAT_HISTORY = [];        // rolling context for the Sarvam chat
+const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => [...r.querySelectorAll(s)];
@@ -520,12 +523,33 @@ function botRespond(intent, raw){
 function userSend(text){
   if(!text.trim()) return;
   addMsg("user", text);
+  if(USE_SARVAM) return sarvamChat(text);
+  return localRoute(text);
+}
+function localRoute(text){
   const s=text.toLowerCase();
   if(/\b(hi|hello|hey|namaste|namaskar|నమస్తే|హాయ్|नमस्ते|हाय)\b/.test(s)) return botRespond("greet");
   if(/(deliver|delivery|ship|courier|డెలివరీ|డెలివర్|డిलीవरी|भेज|डिलीवरी|कूरियर)/.test(s)) return botRespond("delivery");
   if(/(contact|phone|call|number|address|where|సంప్రదించు|ఫోన్|నంబర్|చిరునామా|ఎక్కడ|संपर्क|फोन|नंबर|पता|कहां)/.test(s)) return botRespond("contact");
   if(/(product|list|items|show|catalog|ఉత్పత్తులు|లిస్ట్|उत्पाद|सूची|दिखा)/.test(s)) return botRespond("products");
   return botRespond("search", text);
+}
+
+/* real Sarvam-powered chat (used when backend has a key) */
+async function sarvamChat(text){
+  const tp=typing();
+  try{
+    const r=await fetch("/api/chat",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({message:text,lang:LANG,history:CHAT_HISTORY})});
+    const d=await r.json();
+    tp.remove();
+    if(d.fallback||!d.reply) return localRoute(text);
+    CHAT_HISTORY.push({role:"user",content:text},{role:"assistant",content:d.reply});
+    if(CHAT_HISTORY.length>10) CHAT_HISTORY.splice(0,CHAT_HISTORY.length-10);
+    const waTxt = LANG==='te'?'WhatsApp లో ఆర్డర్':LANG==='hi'?'WhatsApp पर ऑर्डर':'Order on WhatsApp';
+    addMsg("bot", escapeHtml(d.reply).replace(/\n/g,"<br/>")+
+      `<a class="msg-wa" target="_blank" rel="noopener" href="${waLink(text)}">💬 ${waTxt}</a>`);
+  }catch(e){ tp.remove(); localRoute(text); }
 }
 
 /* ---------------- VOICE: browser Web Speech API ---------------- */
@@ -543,6 +567,10 @@ function setupRecog(){
   return r;
 }
 function toggleMic(){
+  if(USE_SARVAM) return toggleSarvamMic();
+  return toggleBrowserMic();
+}
+function toggleBrowserMic(){
   if(!SR){ addMsg("bot", LANG==='te'?'మీ బ్రౌజర్‌లో వాయిస్ సపోర్ట్ లేదు. దయచేసి Chrome వాడండి లేదా టైప్ చేయండి.':LANG==='hi'?'आपके ब्राउज़र में वॉइस सपोर्ट नहीं है। कृपया Chrome इस्तेमाल करें या टाइप करें।':"Voice isn't supported in this browser. Please use Chrome, or type instead."); return; }
   if(listening){ recog && recog.stop(); return; }
   recog=setupRecog(); if(!recog) return;
@@ -550,7 +578,49 @@ function toggleMic(){
   try{ recog.start(); listening=true; $("#botMic").classList.add("listening"); }catch(e){}
 }
 
-function speak(text){
+/* Sarvam voice input (MediaRecorder -> /api/stt) */
+let mediaRec=null, recChunks=[];
+const blobToB64 = (blob)=>new Promise(res=>{const r=new FileReader();r.onloadend=()=>res(String(r.result).split(",")[1]);r.readAsDataURL(blob);});
+async function toggleSarvamMic(){
+  if(listening){ try{ mediaRec && mediaRec.stop(); }catch(e){} return; }
+  if(!navigator.mediaDevices || !window.MediaRecorder){ return toggleBrowserMic(); }
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    recChunks=[]; mediaRec=new MediaRecorder(stream);
+    mediaRec.ondataavailable=e=>{ if(e.data && e.data.size) recChunks.push(e.data); };
+    mediaRec.onstop=async ()=>{
+      stream.getTracks().forEach(t=>t.stop());
+      listening=false; $("#botMic").classList.remove("listening");
+      if(!recChunks.length) return;
+      const blob=new Blob(recChunks,{type:"audio/webm"});
+      const b64=await blobToB64(blob);
+      const tp=typing();
+      try{
+        const r=await fetch("/api/stt",{method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({audioBase64:b64,mime:"audio/webm",lang:LANG})});
+        const d=await r.json(); tp.remove();
+        if(d.transcript){ $("#botText").value=d.transcript; userSend(d.transcript); }
+        else addMsg("bot", LANG==='te'?'క్షమించండి, వినిపించలేదు 🙏 మళ్లీ చెప్పండి.':LANG==='hi'?'माफ़ कीजिए, सुनाई नहीं दिया 🙏 दोबारा बोलें।':"Sorry, I didn't catch that 🙏 please try again.");
+      }catch(e){ tp.remove(); }
+    };
+    mediaRec.start(); listening=true; $("#botMic").classList.add("listening");
+  }catch(e){ /* mic blocked */ toggleBrowserMic(); }
+}
+
+/* voice output: Sarvam TTS first, browser speech as fallback */
+async function speak(text){
+  if(!speakOn || !text) return;
+  if(USE_SARVAM){
+    try{
+      const r=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({text,lang:LANG})});
+      const d=await r.json();
+      if(d && d.audio){ const a=new Audio("data:"+(d.mime||"audio/wav")+";base64,"+d.audio); a.play().catch(()=>browserSpeak(text)); return; }
+    }catch(e){}
+  }
+  browserSpeak(text);
+}
+function browserSpeak(text){
   if(!("speechSynthesis" in window) || !text) return;
   try{
     window.speechSynthesis.cancel();
@@ -565,6 +635,20 @@ function speak(text){
 }
 if("speechSynthesis" in window){ window.speechSynthesis.onvoiceschanged=()=>{}; }
 
+/* detect backend Sarvam availability; upgrade UI if live */
+async function probeSarvam(){
+  try{
+    const r=await fetch("/api/config");
+    if(r.ok && (r.headers.get("content-type")||"").includes("json")){
+      const d=await r.json(); USE_SARVAM=!!d.sarvam;
+    }
+  }catch(e){ USE_SARVAM=false; }
+  if(USE_SARVAM){
+    const demo=$(".bot-demo");
+    if(demo){ demo.removeAttribute("data-i18n"); demo.textContent="⚡ Sarvam AI"; }
+  }
+}
+
 /* ---------------- WIRE-UP ---------------- */
 function init(){
   // language buttons
@@ -574,6 +658,7 @@ function init(){
   // initial render
   setLang("en");
   setWaLinks();
+  probeSarvam();
 
   // nav
   const nav=$("#nav");

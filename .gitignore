@@ -6,6 +6,9 @@ Thumbs.db
 .claude/
 .vscode/
 *.log
+_srv.*
+*.out
+*.err
 
 # Node (for future Sarvam backend)
 node_modules/

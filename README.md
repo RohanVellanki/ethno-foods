@@ -57,21 +57,44 @@ No API key is needed for the demo. Everything runs in the browser.
 
 ---
 
-## Going live with Sarvam AI (Phase 2 — needs a key + a tiny backend)
+## Real Sarvam AI mode (backend is already built)
 
-The browser voice is good for a demo, but **Sarvam AI** gives far better Telugu/Hindi
-voice + a real chatbot brain. That step needs a small server so the API key stays
-secret (never put the key in `app.js` — it's public).
+The repo now includes a small Node backend (`server.js`) that securely proxies
+**Sarvam AI** — chat (LLM), text-to-speech (Bulbul) and speech-to-text (Saaras).
+It is **fail-safe**: with no key it serves the site in demo mode; add the key and
+the assistant auto-upgrades to real Sarvam Telugu/Hindi voice + smart answers.
 
-Plan when you're ready:
-1. Get a free key at **dashboard.sarvam.ai** (₹1,000 free credit).
-2. Add a tiny serverless function (e.g. on **Vercel**) that calls Sarvam's
-   Speech-to-Text, Text-to-Speech and Chat APIs.
-3. Point the assistant's `userSend()` / `speak()` at that function instead of the
-   browser engine.
-4. Deploy free on Vercel and connect a domain.
+### Run locally
+```bash
+npm install
+# demo mode (no key):
+npm start                       # http://localhost:3000
+# real Sarvam mode:
+#   Windows PowerShell:  $env:SARVAM_API_KEY="sk_xxx"; npm start
+#   macOS/Linux:         SARVAM_API_KEY=sk_xxx npm start
+```
 
-(Verba/Claude can do all of this — it's a clean follow-up.)
+### Deploy on Render as a Web Service (so the key stays secret)
+The site must run as a **Web Service** now (not a Static Site), because it has a
+backend.
+1. Get a free key at **dashboard.sarvam.ai** (₹1,000 credit). Keep it secret.
+2. Render → **New + → Web Service** → connect the `ethno-foods` repo.
+3. Settings: **Build Command** `npm install` · **Start Command** `node server.js`.
+4. **Environment** → add `SARVAM_API_KEY = sk_...` (your key). Save.
+5. Deploy. The assistant now uses real Sarvam voice + chat.
+
+(The included `render.yaml` already encodes steps 3–4 as a Blueprint.)
+
+### Endpoints
+| Route | Does |
+|-------|------|
+| `GET /api/config` | tells the frontend if Sarvam is enabled |
+| `POST /api/chat`  | `{message,lang,history}` → Sarvam LLM reply |
+| `POST /api/tts`   | `{text,lang}` → base64 voice audio |
+| `POST /api/stt`   | `{audioBase64,mime,lang}` → transcript |
+
+Optional env overrides: `SARVAM_CHAT_MODEL` (sarvam-m), `SARVAM_TTS_MODEL`
+(bulbul:v2), `SARVAM_TTS_SPEAKER` (anushka), `SARVAM_STT_MODEL` (saarika:v2).
 
 ---
 

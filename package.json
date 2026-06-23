@@ -1,0 +1,15 @@
+{
+  "name": "ethno-foods",
+  "version": "1.0.0",
+  "description": "Ethno Foods (S V Agro Foods) website + trilingual AI chat/voice assistant (Sarvam AI)",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
