@@ -547,8 +547,11 @@ async function sarvamChat(text){
     CHAT_HISTORY.push({role:"user",content:text},{role:"assistant",content:d.reply});
     if(CHAT_HISTORY.length>10) CHAT_HISTORY.splice(0,CHAT_HISTORY.length-10);
     const waTxt = LANG==='te'?'WhatsApp లో ఆర్డర్':LANG==='hi'?'WhatsApp पर ऑर्डर':'Order on WhatsApp';
+    const waMsg = LANG==='te'?`నమస్తే Ethno Foods! మీ వెబ్‌సైట్ అసిస్టెంట్‌తో దీని గురించి అడిగాను: "${text}". దయచేసి ధర & వివరాలు చెప్పండి.`
+      :LANG==='hi'?`नमस्ते Ethno Foods! मैंने आपके वेबसाइट असिस्टेंट से पूछा: "${text}"। कृपया कीमत व विवरण बताएं।`
+      :`Hi Ethno Foods! I asked your website assistant: "${text}". Please share price & details.`;
     addMsg("bot", escapeHtml(d.reply).replace(/\n/g,"<br/>")+
-      `<a class="msg-wa" target="_blank" rel="noopener" href="${waLink(text)}">💬 ${waTxt}</a>`);
+      `<a class="msg-wa" target="_blank" rel="noopener" href="${waLink(waMsg)}">💬 ${waTxt}</a>`);
   }catch(e){ tp.remove(); localRoute(text); }
 }
 
